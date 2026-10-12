@@ -106,35 +106,35 @@ def merge_playlists(a: PlaylistMap, b: PlaylistMap) -> PlaylistMap:
     return merged
 
 
+def average_energy(songs: List[Song]) -> float:
+    """Return the mean energy of the given songs, or 0.0 if there are none."""
+    if not songs:
+        return 0.0
+    return sum(song.get("energy", 0) for song in songs) / len(songs)
+
+
 def compute_playlist_stats(playlists: PlaylistMap) -> Dict[str, object]:
-    """Compute statistics across all playlists."""
-    all_songs: List[Song] = []
-    for songs in playlists.values():
-        all_songs.extend(songs)
+    """Summarize all playlists: song counts per mood, hype ratio,
+    average energy, and the most common artist."""
+    all_songs: List[Song] = [song for songs in playlists.values() for song in songs]
+    total_songs = len(all_songs)
 
-    hype = playlists.get("Hype", [])
-    chill = playlists.get("Chill", [])
-    mixed = playlists.get("Mixed", [])
+    hype_count = len(playlists.get("Hype", []))
+    chill_count = len(playlists.get("Chill", []))
+    mixed_count = len(playlists.get("Mixed", []))
 
-    total = len(hype)
-    hype_ratio = len(hype) / total if total > 0 else 0.0
-
-    avg_energy = 0.0
-    if all_songs:
-        total_energy = sum(song.get("energy", 0) for song in hype)
-        avg_energy = total_energy / len(all_songs)
-
-    top_artist, top_count = most_common_artist(all_songs)
+    hype_ratio = hype_count / total_songs if total_songs else 0.0
+    top_artist, top_artist_count = most_common_artist(all_songs)
 
     return {
-        "total_songs": len(all_songs),
-        "hype_count": len(hype),
-        "chill_count": len(chill),
-        "mixed_count": len(mixed),
+        "total_songs": total_songs,
+        "hype_count": hype_count,
+        "chill_count": chill_count,
+        "mixed_count": mixed_count,
         "hype_ratio": hype_ratio,
-        "avg_energy": avg_energy,
+        "avg_energy": average_energy(all_songs),
         "top_artist": top_artist,
-        "top_artist_count": top_count,
+        "top_artist_count": top_artist_count,
     }
 
 
